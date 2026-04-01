@@ -6,151 +6,49 @@
 <title>DecoTV</title>
 
 <style>
-body { background:#0b0b0b; color:#fff; font-family:Arial; margin:0; }
-header { padding:10px; text-align:center; }
-h1 { margin:5px 0; }
-
-.controls { display:flex; gap:10px; padding:10px; }
-button {
-  flex:1; padding:10px;
-  background:#222; color:#fff; border:none; cursor:pointer;
-}
-button.active { background:#e50914; }
-
-input {
-  width:100%; padding:10px;
-  border:none; outline:none;
-}
-
-.grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-  gap:12px; padding:10px;
-}
-
-.card {
-  cursor:pointer;
-  transition:transform .2s;
-}
-.card:hover { transform:scale(1.05); }
-
-img { width:100%; border-radius:6px; }
-
-.title {
-  font-size:13px;
-  margin-top:5px;
-}
-
-.rating {
-  font-size:12px;
-  color:#ffd700;
-}
-
-.load-more {
-  text-align:center;
-  padding:20px;
-}
+body{background:#0b0b0b;color:#fff;font-family:sans-serif;margin:0}
+h1{text-align:center}
+input{width:100%;padding:10px;margin:10px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:10px}
+.card{cursor:pointer}
+img{width:100%;border-radius:6px}
 </style>
 </head>
 
 <body>
 
-<header>
-  <h1>🎬 DecoTV</h1>
-</header>
+<h1>🎬 DecoTV</h1>
 
-<div class="controls">
-  <button onclick="setType('popular')" class="active">热门</button>
-  <button onclick="setType('now_playing')">热映</button>
-  <button onclick="setType('top_rated')">高分</button>
-</div>
-
-<input id="search" placeholder="搜索电影..." />
+<input id="search" placeholder="搜索电影...">
 
 <div id="app" class="grid"></div>
 
-<div class="load-more">
-  <button onclick="loadMore()">加载更多</button>
-</div>
-
 <script>
-const API = "https://tmdb.chgov.cc.cd";
+const API="https://tmdb.chgov.cc.cd";
 
-let page = 1;
-let currentType = "popular";
-let currentQuery = "";
+async function load(q=""){
+ const url=q?`${API}/search/movie?query=${q}`:`${API}/movie/popular`;
+ const res=await fetch(url);
+ const data=await res.json();
 
-function setActive(btn) {
-  document.querySelectorAll("button").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+ const app=document.getElementById("app");
+ app.innerHTML="";
+
+ data.results.forEach(m=>{
+   const div=document.createElement("div");
+   div.className="card";
+   div.innerHTML=`
+     <img src="https://image.tmdb.org/t/p/w500${m.poster_path}">
+     <p>${m.title}</p>
+   `;
+   div.onclick=()=>location.href=`detail.html?id=${m.id}`;
+   app.appendChild(div);
+ });
 }
 
-function setType(type) {
-  currentType = type;
-  currentQuery = "";
-  page = 1;
-  document.getElementById("app").innerHTML = "";
-  loadMovies();
-}
+document.getElementById("search").oninput=e=>load(e.target.value);
 
-async function loadMovies() {
-  let url;
-
-  if (currentQuery) {
-    url = `${API}/search/movie?query=${currentQuery}&page=${page}`;
-  } else {
-    url = `${API}/movie/${currentType}?page=${page}`;
-  }
-
-  const res = await fetch(url);
-  const data = await res.json();
-
-  render(data.results);
-}
-
-function render(list) {
-  const app = document.getElementById("app");
-
-  list.forEach(m => {
-    const div = document.createElement("div");
-    div.className = "card";
-
-    div.innerHTML = `
-      <img loading="lazy" src="https://image.tmdb.org/t/p/w500${m.poster_path}" />
-      <div class="title">${m.title}</div>
-      <div class="rating">⭐ ${m.vote_average}</div>
-    `;
-
-    div.onclick = () => showDetail(m.id);
-    app.appendChild(div);
-  });
-}
-
-async function showDetail(id) {
-  const res = await fetch(`${API}/movie/${id}`);
-  const m = await res.json();
-
-  alert(`${m.title}\n评分: ${m.vote_average}\n\n${m.overview}`);
-}
-
-function loadMore() {
-  page++;
-  loadMovies();
-}
-
-// 搜索防抖
-let timer;
-document.getElementById("search").oninput = (e) => {
-  clearTimeout(timer);
-  timer = setTimeout(() => {
-    currentQuery = e.target.value;
-    page = 1;
-    document.getElementById("app").innerHTML = "";
-    loadMovies();
-  }, 500);
-};
-
-loadMovies();
+load();
 </script>
 
 </body>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>详情</title>
+
+<style>
+body{background:#000;color:#fff;font-family:sans-serif;padding:15px}
+img{width:200px;border-radius:8px}
+.btn{display:block;margin:15px 0;padding:10px;background:red;color:#fff;text-align:center}
+.ad{margin:20px 0;padding:10px;background:#222;text-align:center}
+</style>
+</head>
+
+<body>
+
+<h1 id="title"></h1>
+<img id="poster">
+
+<p id="desc"></p>
+
+<a class="btn" id="playBtn">▶ 播放</a>
+
+<div class="ad">
+👉 广告位（后续放 AdSense / Adsterra）
+</div>
+
+<script>
+const API="https://tmdb.chgov.cc.cd";
+
+const id=new URLSearchParams(location.search).get("id");
+
+async function load(){
+ const res=await fetch(`${API}/movie/${id}`);
+ const m=await res.json();
+
+ document.getElementById("title").innerText=m.title;
+ document.getElementById("poster").src=`https://image.tmdb.org/t/p/w500${m.poster_path}`;
+ document.getElementById("desc").innerText=m.overview;
+
+ // 🔥 播放接口（可换资源站）
+ document.getElementById("playBtn").href=
+   `https://vidsrc.to/embed/movie/${id}`;
+}
+
+load();
+</script>
+
+</body>
+</html>
