@@ -1,0 +1,33 @@
+name: Auto Generate Movies
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # 每6小时执行一次
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 拉取仓库
+        uses: actions/checkout@v3
+
+      - name: 安装Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 安装依赖
+        run: npm install node-fetch
+
+      - name: 生成页面
+        run: node generate.js
+
+      - name: 提交更新
+        run: |
+          git config --global user.name "bot"
+          git config --global user.email "bot@example.com"
+          git add .
+          git commit -m "auto update movies" || echo "no changes"
+          git push
