@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DecoTV</title>
+
+  <style>
+    body { background:#0b0b0b; color:#fff; font-family:Arial; }
+    h1 { text-align:center; }
+    input { width:100%; padding:10px; margin:10px 0; }
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+      gap:15px;
+    }
+    .card { cursor:pointer; }
+    img { width:100%; border-radius:8px; }
+  </style>
+</head>
+
+<body>
+
+<h1>🎬 DecoTV</h1>
+
+<input id="search" placeholder="搜索电影..." />
+
+<div id="app" class="grid"></div>
+
+<script>
+const API = "https://tmdb.chgov.cc.cd";
+
+async function loadMovies(query="") {
+  const url = query
+    ? `${API}/search/movie?query=${query}`
+    : `${API}/movie/popular`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+
+  data.results.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" />
+      <p>${m.title}</p>
+    `;
+    div.onclick = () => showDetail(m.id);
+    app.appendChild(div);
+  });
+}
+
+async function showDetail(id) {
+  const res = await fetch(`${API}/movie/${id}`);
+  const m = await res.json();
+
+  alert(`${m.title}\n评分:${m.vote_average}\n\n${m.overview}`);
+}
+
+document.getElementById("search").oninput = (e) => {
+  loadMovies(e.target.value);
+};
+
+loadMovies();
+</script>
+
+</body>
+</html>
